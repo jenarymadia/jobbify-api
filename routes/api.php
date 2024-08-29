@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\DataController;
 use App\Http\Controllers\Api\StaffController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,4 +28,9 @@ Route::prefix('clients')->middleware('auth:sanctum')->group(function () {
 Route::prefix('staffs')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [StaffController::class, 'index']); // List staffs
     Route::get('/{id}', [StaffController::class, 'show']);
+    Route::post('/', [StaffController::class, 'store']); // Create a new client
+    Route::put('/{user}', [StaffController::class, 'update']);
+    Route::delete('/{user}', [StaffController::class, 'destroy']);
 });
+
+Route::middleware('auth:sanctum')->get('/roles', [DataController::class, 'index']);
