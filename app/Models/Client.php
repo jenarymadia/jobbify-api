@@ -21,7 +21,7 @@ class Client extends Model
     {
         static::creating(function ($client) {
             $client->user_id = Auth::id();
-            $client->team_id = Auth::user()->personalTeam->id;
+            $client->team_id = Auth::user()->personalTeam()->id;
         });
     }
 

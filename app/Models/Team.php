@@ -15,4 +15,13 @@ class Team extends Model
      * @var array<int, string>
      */
     protected $guarded = [];
+
+
+    /**
+     * The users that belong to the team.
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'team_user');
+    }
 }
