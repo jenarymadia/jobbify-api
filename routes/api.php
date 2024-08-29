@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\StaffController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -21,4 +22,8 @@ Route::prefix('clients')->middleware('auth:sanctum')->group(function () {
     Route::put('/{client}', [ClientController::class, 'update']);
     Route::get('/statuses', [ClientController::class, 'statuses']); // Get statuses for leads
     Route::delete('/{client}', [ClientController::class, 'destroy']);
+});
+
+Route::prefix('staffs')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [StaffController::class, 'index']); // List staffs
 });
