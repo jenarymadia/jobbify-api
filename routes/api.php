@@ -26,4 +26,5 @@ Route::prefix('clients')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('staffs')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [StaffController::class, 'index']); // List staffs
+    Route::get('/{id}', [StaffController::class, 'show']);
 });
