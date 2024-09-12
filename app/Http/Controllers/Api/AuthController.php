@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\CompanyDetails;
+use App\Models\Team;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -33,10 +35,22 @@ class AuthController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "email", "password"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             required={"first_name", "last_name", "birthday", "email", "password", "company_name", "staffs_no", "current_revenue", "business", "phone_number", "address", "address_line_2", "city", "postal_code", "country"},
+     *             @OA\Property(property="first_name", type="string", example="John"),
+     *             @OA\Property(property="last_name", type="string", example="Doe"),
+     *             @OA\Property(property="birthday", type="string", format="date", example="1990-01-01"),
      *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123")
+     *             @OA\Property(property="password", type="string", format="password", example="password123"),
+     *             @OA\Property(property="company_name", type="string", example="Doe Inc."),
+     *             @OA\Property(property="staffs_no", type="integer", example=50),
+     *             @OA\Property(property="current_revenue", type="string", example="500000"),
+     *             @OA\Property(property="business", type="string", example="E-commerce"),
+     *             @OA\Property(property="phone_number", type="string", example="1234567890"),
+     *             @OA\Property(property="address", type="string", example="123 Main St"),
+     *             @OA\Property(property="address_line_2", type="string", example="Suite 500"),
+     *             @OA\Property(property="city", type="string", example="Los Angeles"),
+     *             @OA\Property(property="postal_code", type="string", example="90001"),
+     *             @OA\Property(property="country", type="string", example="USA")
      *         ),
      *     ),
      *     @OA\Response(
@@ -47,7 +61,8 @@ class AuthController extends Controller
      *             @OA\Property(property="message", type="string", example="User Created Successfully"),
      *             @OA\Property(property="user", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="John Doe"),
+     *                 @OA\Property(property="first_name", type="string", example="John"),
+     *                 @OA\Property(property="last_name", type="string", example="Doe"),
      *                 @OA\Property(property="email", type="string", example="john.doe@example.com")
      *             ),
      *             @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1...")
@@ -78,9 +93,21 @@ class AuthController extends Controller
             // Validate
             $validateUser = Validator::make($request->all(), 
             [
-                'name' => 'required',
+                'first_name' => 'required',
+                'last_name' => 'required',
+                'birthday' => 'required',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'required'
+                'password' => 'required',
+                'company_name' => 'required',
+                'staffs_no' => '',
+                'current_revenue' => '',
+                'business' => '',
+                'phone_number' => '',
+                'address' => '',
+                'address_line_2' => '',
+                'city' => '',
+                'postal_code' => '',
+                'country' => ''
             ]);
 
             if($validateUser->fails()){
@@ -92,10 +119,17 @@ class AuthController extends Controller
             }
 
             $user = User::create([
-                'name' => $request->name,
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'birthday' => $request->birthday,
+                'name' => $request->first_name . ' ' . $request->last_name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password)
             ]);
+
+            $teamID = $this->createTeam($user, $request->company_name); 
+            $this->startTrial($user); 
+            $this->addCompanyDetails($teamID, $request);
 
             return response()->json([
                 'status' => true,
@@ -110,6 +144,49 @@ class AuthController extends Controller
                 'message' => $th->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Create a personal team for the user.
+     */
+    protected function createTeam(User $user, $teamName = null): int
+    {
+        $teamName = $teamName ?? explode(' ', $user->name, 2)[0]."'s Team";
+        $team = Team::forceCreate([
+            'user_id' => $user->id,
+            'name' => $teamName,
+            'personal_team' => true,
+        ]);
+        
+        // Now you can save the team to the user's ownedTeams
+        $user->ownedTeams()->save($team);
+
+        return $team->id;
+         
+    }
+
+    protected function addCompanyDetails($teamID, $request) {
+        CompanyDetails::create([
+            "team_id" => $teamID,
+            "staffs_no" => $request->staffs_no,
+            "current_revenue" => $request->current_revenue,
+            "phone_number" => $request->phone_number,
+            "business_name" => $request->business,
+            "business_number" => $request->phone_number,
+            "street_line_1" => $request->address,
+            "street_line_2" => $request->address_line2,
+            "city" => $request->city,
+            "zip_code" => $request->postal,
+            "country" => $request->country
+        ]);
+    }
+
+
+    protected function startTrial(User $user)
+    {
+        // Set the trial end date 14 days from now
+        $user->trial_ends_at = now()->addDays(14);
+        $user->save();
     }
 
     /**
