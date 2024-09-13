@@ -4,8 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\DataController;
 use App\Http\Controllers\Api\StaffController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -13,9 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/auth/register', [AuthController::class, 'createUser']);
 Route::post('/auth/login', [AuthController::class, 'loginUser']);
 
-Route::get('/user', function (Request $request) {
-    return Auth::user();
-})->middleware('auth:sanctum');
+Route::get('/user', [UserController::class, 'index'])->middleware('auth:sanctum');
 
 Route::prefix('clients')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [ClientController::class, 'index']); // List clients
