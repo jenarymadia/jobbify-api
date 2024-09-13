@@ -42,8 +42,23 @@ class AuthController extends Controller
      *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="password123"),
      *             @OA\Property(property="company_name", type="string", example="Doe Inc."),
-     *             @OA\Property(property="staffs_no", type="integer", example=50),
-     *             @OA\Property(property="current_revenue", type="string", example="500000"),
+     *             
+     *             @OA\Property(
+     *                 property="staffs_no",
+     *                 type="object",
+     *                 required={"min", "max"},
+     *                 @OA\Property(property="min", type="integer", example=1),
+     *                 @OA\Property(property="max", type="integer", example=50)
+     *             ),
+     *             
+     *             @OA\Property(
+     *                 property="current_revenue",
+     *                 type="object",
+     *                 required={"label", "value"},
+     *                 @OA\Property(property="label", type="string", example="under $100k"),
+     *                 @OA\Property(property="value", type="integer", example=100000)
+     *             ),
+     *             
      *             @OA\Property(property="business", type="string", example="E-commerce"),
      *             @OA\Property(property="phone_number", type="string", example="1234567890"),
      *             @OA\Property(property="address", type="string", example="123 Main St"),
@@ -123,7 +138,12 @@ class AuthController extends Controller
                 'last_name' => $request->last_name,
                 'birthday' => $request->birthday,
                 'email' => $request->email,
-                'password' => Hash::make($request->password)
+                'password' => Hash::make($request->password),
+                "street_line_1" => $request->address,
+                "street_line_2" => $request->address_line2,
+                "city" => $request->city,
+                "zip_code" => $request->postal,
+                "country" => $request->country
             ]);
 
             $teamID = $this->createTeam($user, $request->company_name); 
@@ -167,16 +187,11 @@ class AuthController extends Controller
     protected function addCompanyDetails($teamID, $request) {
         CompanyDetails::create([
             "team_id" => $teamID,
-            "staffs_no" => $request->staffs_no,
-            "current_revenue" => $request->current_revenue,
+            "staffs_no" => json_encode($request->staffs_no),
+            "current_revenue" => json_encode($request->current_revenue),
             "phone_number" => $request->phone_number,
             "business_name" => $request->business,
-            "business_number" => $request->phone_number,
-            "street_line_1" => $request->address,
-            "street_line_2" => $request->address_line2,
-            "city" => $request->city,
-            "zip_code" => $request->postal,
-            "country" => $request->country
+            "business_number" => $request->phone_number
         ]);
     }
 
