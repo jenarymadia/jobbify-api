@@ -142,7 +142,7 @@ class AuthController extends Controller
                 "street_line_1" => $request->address,
                 "street_line_2" => $request->address_line2,
                 "city" => $request->city,
-                "zip_code" => $request->postal,
+                "zip_code" => $request->postal_code,
                 "country" => $request->country
             ]);
 
