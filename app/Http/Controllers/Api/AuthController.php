@@ -180,6 +180,9 @@ class AuthController extends Controller
         // Now you can save the team to the user's ownedTeams
         $user->ownedTeams()->save($team);
 
+        // Set current team
+        $user->switchTeam($team);
+
         return $team->id;
          
     }
